@@ -132,12 +132,21 @@ public static class TimeConverter
         return modifiedDate;
     }
 
+    public static double JulianDateToJulianCentuary(double jd)
+    {
+        double s = jd - 2451545;
+        return s / 36525;
+    }
+    public static bool IsLeapYear(int yr)
+    {
+        return ((yr % 4 == 0 && yr % 100 != 0) || yr % 400 == 0);
+    }
     public static double ToSiderealTime(this DateTime date)
     {
         DateTime d = date.Date;
         double julianDate = getJulianDate(d);
-        double s = julianDate - 2451545;
-        var t = s / 36525;
+        //double s = julianDate - 2451545;
+        var t = JulianDateToJulianCentuary(julianDate); //s / 36525;
         double t0 = 6.697374558 + (2400.051336 * t) + (0.000025862 * t * t);
         while (t0 > 24)
         {
@@ -156,4 +165,28 @@ public static class TimeConverter
         }
         return t0;
     }
+    public static double CalcDoyFromJD(double jd)
+    {
+        var z = Math.Floor(jd + 0.5f);
+        var f = (jd + 0.5f) - z;
+        int A = (int)z;
+        int alpha = 0;
+        if (z >= 2299161)
+        {
+            alpha = (int)Math.Floor((z - 1867216.25f) / 36524.25f);
+            A = (int)z + 1 + alpha - (int)Math.Floor(alpha * 0.25f);
+        }
+        var B = A + 1524;
+        var C = Math.Floor((B - 122.1f) / 365.25f);
+        var D = Math.Floor(365.25f * C);
+        var E = Math.Floor((B - D) / 30.6001f);
+        var day = B - D - Math.Floor(30.6001f * E) + f;
+        var month = (E < 14) ? E - 1 : E - 13;
+        var year = (month > 2) ? C - 4716 : C - 4715;
+
+        var k = (TimeConverter.IsLeapYear((int)year) ? 1 : 2);
+        var doy = Math.Floor((275 * month) / 9) - k * Math.Floor((month + 9) / 12) + day - 30;
+        return doy;
+    }
+
 }

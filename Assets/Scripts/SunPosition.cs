@@ -73,6 +73,7 @@ public class SunPosition : MonoBehaviour
     {
         return radius * Mathf.Sin(altitude);
     }
+
     /// <summary>
     /// Calculates the sun position. calculates the suns "position" based on a 
     /// given date and time in local time, latitude and longitude 
@@ -99,6 +100,7 @@ public class SunPosition : MonoBehaviour
             (int)((275.0 * dateTime.Month) / 9.0) +
             dateTime.Day - 730530.5;
 
+
         double julianCenturies = julianDate / 36525.0;
 
         // Sidereal Time  
@@ -106,6 +108,8 @@ public class SunPosition : MonoBehaviour
 
         double siderealTimeUT = siderealTimeHours +
             (366.2422 / 365.2422) * dateTime.TimeOfDay.TotalHours;
+
+        Debug.Log(julianDate + " " + dateTime.ToJulianDate() + " " + dateTime.ToSiderealTime());
 
         double siderealTime = siderealTimeUT * 15 + longitude;
 
