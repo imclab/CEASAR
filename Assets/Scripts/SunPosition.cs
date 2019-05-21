@@ -7,6 +7,7 @@ public class SunPosition : MonoBehaviour
     public GameObject sun;
     public DataController dataController;
     private City currentCity;
+    public SunPositionUtility util = new SunPositionUtility();
 
     public Material lineMaterial;
     private LineRenderer sunArcLine;
@@ -28,6 +29,7 @@ public class SunPosition : MonoBehaviour
     }
     void renderSunArc()
     {
+        SunPositionUtility util = new SunPositionUtility();
         if (sunArcLine != null) Destroy(sunArcLine);
         sunArcLine = gameObject.AddComponent<LineRenderer>();
         List<Vector3> points = new List<Vector3>();
@@ -37,7 +39,7 @@ public class SunPosition : MonoBehaviour
             DateTime t = midnight.AddSeconds(i);
             var solarPosition = CalculateSunPosition(t, dataController.currentCity.Lat, dataController.currentCity.Lng);
             points.Add(solarPosToWorld(solarPosition));
-
+            // util.calcAzEl(true, DateTime.Now.ToJulianDate(), i, dataController.currentCity.Lat, dataController.currentCity.Lng, -5);
             Debug.LogFormat("Result ==> Time: {0}, Altitude: {1}, Azimuth :{2}", t.ToShortTimeString(), solarPosition.Altitude, solarPosition.Azimuth);
         }
         sunArcLine.positionCount = points.Count;
