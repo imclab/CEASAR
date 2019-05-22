@@ -132,7 +132,7 @@ public static class TimeConverter
         return modifiedDate;
     }
 
-    public static double JulianDateToJulianCentuary(double jd)
+    public static double calcTimeJulianCent(double jd)
     {
         double s = jd - 2451545;
         return s / 36525;
@@ -146,7 +146,7 @@ public static class TimeConverter
         DateTime d = date.Date;
         double julianDate = getJulianDate(d);
         //double s = julianDate - 2451545;
-        var t = JulianDateToJulianCentuary(julianDate); //s / 36525;
+        var t = calcTimeJulianCent(julianDate); //s / 36525;
         double t0 = 6.697374558 + (2400.051336 * t) + (0.000025862 * t * t);
         while (t0 > 24)
         {
