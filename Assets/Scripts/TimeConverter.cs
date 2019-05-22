@@ -20,7 +20,7 @@ public static class TimeConverter
         fractionalDay -= Math.Floor(fractionalDay);
         var totalHours = fractionalDay * 24;
         int hours = (int)Math.Floor(totalHours);
-        var totalMinutes = (totalHours - hours) * 60; ;
+        var totalMinutes = (totalHours - hours) * 60;
         int minutes = (int)Math.Floor(totalMinutes);
         var totalSeonds = (totalMinutes - minutes) * 60;
         int seconds = (int)Math.Floor(totalSeonds);

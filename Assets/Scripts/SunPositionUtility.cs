@@ -1,305 +1,318 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System;
+﻿using System;
+using System.Text;
 
-public struct SunPosition {
-    double Azimuth;
-    double Elevation;
-    public SunPosition(double azimuth, double elevation){
+public struct SkyPosition
+{
+    public double Azimuth;
+    public double Elevation;
+    public SkyPosition(double azimuth, double elevation)
+    {
         Azimuth = azimuth;
         Elevation = elevation;
     }
 }
 public class SunPositionUtility
 {
-    public SunPositionUtility(){}
+    public SunPositionUtility()
+    {
+        outputMessages = new StringBuilder();
+    }
+    private StringBuilder outputMessages;
+    public StringBuilder OutputMessages
+    {
+        get { return outputMessages; }
+    }
 
-    public double Deg2Rad(double deg){
+
+    public double Deg2Rad(double deg)
+    {
         return Math.PI * deg / 180;
     }
-    public double Rad2Deg(double rad){
-        return 180 * rad / Math.PI;
+    public double Rad2Deg(double rad)
+    {
+        return 180.0 * rad / Math.PI;
     }
     public double calcGeomMeanLongSun(double t)
     {
-        var L0 = 280.46646f + t * (36000.76983f + t * (0.0003032f));
-        while (L0 > 360.0f)
+        double L0 = 280.46646 + t * (36000.76983 + t * (0.0003032));
+        while (L0 > 360.0)
         {
-            L0 -= 360.0f;
+            L0 -= 360.0;
         }
-        while (L0 < 0.0f)
+        while (L0 < 0.0)
         {
-            L0 += 360.0f;
+            L0 += 360.0;
         }
         return L0;     // in degrees
     }
 
     public double calcGeomMeanAnomalySun(double t)
     {
-        var M = 357.52911f + t * (35999.05029f - 0.0001537f * t);
+        double M = 357.52911 + t * (35999.05029 - 0.0001537 * t);
         return M;     // in degrees
     }
 
     public double calcEccentricityEarthOrbit(double t)
     {
-        var e = 0.016708634f - t * (0.000042037f + 0.0000001267f * t);
+        double e = 0.016708634 - t * (0.000042037 + 0.0000001267 * t);
         return e;     // unitless
     }
 
     public double calcSunEqOfCenter(double t)
     {
-        var m = calcGeomMeanAnomalySun(t);
-        var mrad = Deg2Rad(m);
-        var sinm = Math.Sin(mrad);
-        var sin2m = Math.Sin(mrad + mrad);
-        var sin3m = Math.Sin(mrad + mrad + mrad);
-        var C = sinm * (1.914602f - t * (0.004817f + 0.000014f * t)) + sin2m * (0.019993f - 0.000101f * t) + sin3m * 0.000289f;
+        double m = calcGeomMeanAnomalySun(t);
+        double mrad = Deg2Rad(m);
+        double sinm = Math.Sin(mrad);
+        double sin2m = Math.Sin(mrad + mrad);
+        double sin3m = Math.Sin(mrad + mrad + mrad);
+        double C = sinm * (1.914602 - t * (0.004817 + 0.000014 * t)) + sin2m * (0.019993 - 0.000101 * t) + sin3m * 0.000289;
         return C;     // in degrees
     }
 
     public double calcSunTrueLong(double t)
     {
-        var l0 = calcGeomMeanLongSun(t);
-        var c = calcSunEqOfCenter(t);
-        var O = l0 + c;
+        double l0 = calcGeomMeanLongSun(t);
+        double c = calcSunEqOfCenter(t);
+        double O = l0 + c;
         return O;     // in degrees
     }
 
     public double calcSunTrueAnomaly(double t)
     {
-        var m = calcGeomMeanAnomalySun(t);
-        var c = calcSunEqOfCenter(t);
-        var v = m + c;
+        double m = calcGeomMeanAnomalySun(t);
+        double c = calcSunEqOfCenter(t);
+        double v = m + c;
         return v;     // in degrees
     }
 
     public double calcSunRadVector(double t)
     {
-        var v = calcSunTrueAnomaly(t);
-        var e = calcEccentricityEarthOrbit(t);
-        var R = (1.000001018f * (1 - e * e)) / (1 + e * Math.Cos(Deg2Rad(v)));
+        double v = calcSunTrueAnomaly(t);
+        double e = calcEccentricityEarthOrbit(t);
+        double R = (1.000001018 * (1 - e * e)) / (1 + e * Math.Cos(Deg2Rad(v)));
         return R;     // in AUs
     }
 
     public double calcSunApparentLong(double t)
     {
-        var o = calcSunTrueLong(t);
-        var omega = 125.04f - 1934.136f * t;
-        var lambda = o - 0.00569f - 0.00478f * Math.Sin(Deg2Rad(omega));
+        double o = calcSunTrueLong(t);
+        double omega = 125.04 - 1934.136 * t;
+        double lambda = o - 0.00569 - 0.00478 * Math.Sin(Deg2Rad(omega));
         return lambda;        // in degrees
     }
 
     public double calcMeanObliquityOfEcliptic(double t)
     {
-        var seconds = 21.448f - t * (46.8150f + t * (0.00059f - t * (0.001813f)));
-        var e0 = 23.0f + (26.0f + (seconds / 60.0f)) / 60.0f;
+        double seconds = 21.448 - t * (46.8150 + t * (0.00059 - t * (0.001813)));
+        double e0 = 23.0 + (26.0 + (seconds / 60.0)) / 60.0;
         return e0;        // in degrees
     }
 
     public double calcObliquityCorrection(double t)
     {
-        var e0 = calcMeanObliquityOfEcliptic(t);
-        var omega = 125.04f - 1934.136f * t;
-        var e = e0 + 0.00256f * Math.Cos(Deg2Rad(omega));
+        double e0 = calcMeanObliquityOfEcliptic(t);
+        double omega = 125.04 - 1934.136 * t;
+        double e = e0 + 0.00256 * Math.Cos(Deg2Rad(omega));
         return e;     // in degrees
     }
 
     public double calcSunRtAscension(double t)
     {
-        var e = calcObliquityCorrection(t);
-        var lambda = calcSunApparentLong(t);
-        var tananum = (Math.Cos(Deg2Rad(e)) * Math.Sin(Deg2Rad(lambda)));
-        var tanadenom = (Math.Cos(Deg2Rad(lambda)));
-        var alpha = Rad2Deg (Math.Atan2(tananum, tanadenom));
+        double e = calcObliquityCorrection(t);
+        double lambda = calcSunApparentLong(t);
+        double tananum = (Math.Cos(Deg2Rad(e)) * Math.Sin(Deg2Rad(lambda)));
+        double tanadenom = (Math.Cos(Deg2Rad(lambda)));
+        double alpha = Rad2Deg(Math.Atan2(tananum, tanadenom));
         return alpha;     // in degrees
     }
 
     public double calcSunDeclination(double t)
     {
-        var e = calcObliquityCorrection(t);
-        var lambda = calcSunApparentLong(t);
+        double e = calcObliquityCorrection(t);
+        double lambda = calcSunApparentLong(t);
 
-        var sint = Math.Sin(Deg2Rad(e)) * Math.Sin(Deg2Rad(lambda));
-        var theta = Rad2Deg (Math.Asin(sint));
+        double sint = Math.Sin(Deg2Rad(e)) * Math.Sin(Deg2Rad(lambda));
+        double theta = Rad2Deg(Math.Asin(sint));
         return theta;     // in degrees
     }
 
     public double calcEquationOfTime(double t)
     {
-        var epsilon = calcObliquityCorrection(t);
-        var l0 = calcGeomMeanLongSun(t);
-        var e = calcEccentricityEarthOrbit(t);
-        var m = calcGeomMeanAnomalySun(t);
+        double epsilon = calcObliquityCorrection(t);
+        double l0 = calcGeomMeanLongSun(t);
+        double e = calcEccentricityEarthOrbit(t);
+        double m = calcGeomMeanAnomalySun(t);
 
-        var y = Math.Tan(Deg2Rad(epsilon) / 2.0f);
+        double y = Math.Tan(Deg2Rad(epsilon) / 2.0);
         y *= y;
 
-        var sin2l0 = Math.Sin(2.0f * Deg2Rad(l0));
-        var sinm = Math.Sin(Deg2Rad(m));
-        var cos2l0 = Math.Cos(2.0f * Deg2Rad(l0));
-        var sin4l0 = Math.Sin(4.0f * Deg2Rad(l0));
-        var sin2m = Math.Sin(2.0f * Deg2Rad(m));
+        double sin2l0 = Math.Sin(2.0 * Deg2Rad(l0));
+        double sinm = Math.Sin(Deg2Rad(m));
+        double cos2l0 = Math.Cos(2.0 * Deg2Rad(l0));
+        double sin4l0 = Math.Sin(4.0 * Deg2Rad(l0));
+        double sin2m = Math.Sin(2.0 * Deg2Rad(m));
 
-        var Etime = y * sin2l0 - 2.0f * e * sinm + 4.0f * e * y * sinm * cos2l0 - 0.5f * y * y * sin4l0 - 1.25f * e * e * sin2m;
-        return  Rad2Deg (Etime) * 4.0f;  // in minutes of time
+        double Etime = y * sin2l0 - 2.0 * e * sinm + 4.0 * e * y * sinm * cos2l0 - 0.5 * y * y * sin4l0 - 1.25 * e * e * sin2m;
+        return Rad2Deg(Etime) * 4.0;  // in minutes of time
     }
 
     public double calcHourAngleSunrise(double lat, double solarDec)
     {
-        var latRad = Deg2Rad(lat);
-        var sdRad = Deg2Rad(solarDec);
-        var HAarg = (Math.Cos(Deg2Rad(90.833f)) / (Math.Cos(latRad) * Math.Cos(sdRad)) - Math.Tan(latRad) * Math.Tan(sdRad));
-        var HA = Math.Acos(HAarg);
+        double latRad = Deg2Rad(lat);
+        double sdRad = Deg2Rad(solarDec);
+        double HAarg = (Math.Cos(Deg2Rad(90.833)) / (Math.Cos(latRad) * Math.Cos(sdRad)) - Math.Tan(latRad) * Math.Tan(sdRad));
+        double HA = Math.Acos(HAarg);
         return HA;        // in radians (for sunset, use -HA)
     }
 
-    public SunPosition calcAzEl(bool output, double T, double localtime, double latitude, double longitude, double zone)
+    public SkyPosition calcAzEl(bool output, double T, double localtime, double latitude, double longitude, double zone)
     {
-        var eqTime = calcEquationOfTime(T);
-        var theta = calcSunDeclination(T);
+        double eqTime = calcEquationOfTime(T);
+        double theta = calcSunDeclination(T);
         if (output)
         {
-            Console.WriteLine("Equation of Time: " + Math.Floor(eqTime * 100 + 0.5f) / 100.0f);
-            Console.WriteLine("Sun Declination " + Math.Floor(theta * 100 + 0.5f) / 100.0f);
+            outputMessages.Append("Equation of Time: " + Math.Floor(eqTime * 100 + 0.5) / 100.0 + "\n");
+            outputMessages.Append("Sun Declination " + Math.Floor(theta * 100 + 0.5) / 100.0 + "\n");
         }
-        var solarTimeFix = eqTime + 4.0f * longitude - 60.0f * zone;
-        var earthRadVec = calcSunRadVector(T);
-        var trueSolarTime = localtime + solarTimeFix;
-        Console.WriteLine("true solar time " + trueSolarTime);
+        double solarTimeFix = eqTime + 4.0 * longitude - 60.0 * zone;
+        double earthRadVec = calcSunRadVector(T);
+        double trueSolarTime = localtime + solarTimeFix;
+        outputMessages.Append("true solar time " + trueSolarTime + "\n");
         while (trueSolarTime > 1440)
         {
             trueSolarTime -= 1440;
         }
-        var hourAngle = trueSolarTime / 4.0f - 180.0f;
+        double hourAngle = trueSolarTime / 4.0 - 180.0;
         if (hourAngle < -180)
         {
-            hourAngle += 360.0f;
+            hourAngle += 360.0;
         }
-        var haRad = Deg2Rad(hourAngle);
-        var csz = Math.Sin(Deg2Rad(latitude)) * Math.Sin(Deg2Rad(theta)) + Math.Cos(Deg2Rad(latitude)) * Math.Cos(Deg2Rad(theta)) * Math.Cos(haRad);
-        if (csz > 1.0f)
+        double haRad = Deg2Rad(hourAngle);
+        double csz = Math.Sin(Deg2Rad(latitude)) * Math.Sin(Deg2Rad(theta)) + Math.Cos(Deg2Rad(latitude)) * Math.Cos(Deg2Rad(theta)) * Math.Cos(haRad);
+        if (csz > 1.0)
         {
-            csz = 1.0f;
+            csz = 1.0;
         }
         else if (csz < -1.0f)
         {
-            csz = -1.0f;
+            csz = -1.0;
         }
-        var zenith =  Rad2Deg(Math.Acos(csz));
-        var azDenom = (Math.Cos(Deg2Rad(latitude)) * Math.Sin(Deg2Rad(zenith)));
+        double zenith = Rad2Deg(Math.Acos(csz));
+        double azDenom = (Math.Cos(Deg2Rad(latitude)) * Math.Sin(Deg2Rad(zenith)));
         double azRad = 0;
         double azimuth;
-        if (Math.Abs(azDenom) > 0.001f)
+        if (Math.Abs(azDenom) > 0.001)
         {
             azRad = ((Math.Sin(Deg2Rad(latitude)) * Math.Cos(Deg2Rad(zenith))) - Math.Sin(Deg2Rad(theta))) / azDenom;
-            if (Math.Abs(azRad) > 1.0f)
+            if (Math.Abs(azRad) > 1.0)
             {
-                azRad = azRad < 0 ? -1.0f : 1.0f;
+                azRad = azRad < 0 ? -1.0 : 1.0;
 
             }
-            azimuth = 180.0f -  Rad2Deg(Math.Acos(azRad));
-            if (hourAngle > 0.0f)
+            azimuth = 180.0 - Rad2Deg(Math.Acos(azRad));
+            if (hourAngle > 0.0)
             {
                 azimuth = -azimuth;
             }
         }
         else
         {
-            if (latitude > 0.0f)
+            if (latitude > 0.0)
             {
-                azimuth = 180.0f;
+                azimuth = 180.0;
             }
             else
             {
-                azimuth = 0.0f;
+                azimuth = 0.0;
             }
         }
-        if (azimuth < 0.0f)
+        if (azimuth < 0.0)
         {
-            azimuth += 360.0f;
+            azimuth += 360.0;
         }
-        var exoatmElevation = 90.0f - zenith;
+        double exoatmElevation = 90.0 - zenith;
 
         // Atmospheric Refraction correction
-        double refractionCorrection = 0.0f;
-        if (exoatmElevation > 85.0f)
+        double refractionCorrection = 0.0;
+        if (exoatmElevation > 85.0)
         {
-            refractionCorrection = 0.0f;
+            refractionCorrection = 0.0;
         }
         else
         {
-            var te = Math.Tan(Deg2Rad(exoatmElevation));
-            if (exoatmElevation > 5.0f)
+            double te = Math.Tan(Deg2Rad(exoatmElevation));
+            if (exoatmElevation > 5.0)
             {
-                refractionCorrection = 58.1f / te - 0.07f / (te * te * te) + 0.000086f / (te * te * te * te * te);
+                refractionCorrection = 58.1 / te - 0.07 / (te * te * te) + 0.000086 / (te * te * te * te * te);
             }
-            else if (exoatmElevation > -0.575f)
+            else if (exoatmElevation > -0.575)
             {
-                refractionCorrection = 1735.0f + exoatmElevation * (-518.2f + exoatmElevation * (103.4f + exoatmElevation * (-12.79f + exoatmElevation * 0.711f)));
+                refractionCorrection = 1735.0 + exoatmElevation * (-518.2 + exoatmElevation * (103.4 + exoatmElevation * (-12.79 + exoatmElevation * 0.711)));
             }
             else
             {
-                refractionCorrection = -20.774f / te;
+                refractionCorrection = -20.774 / te;
             }
-            refractionCorrection = refractionCorrection / 3600.0f;
+            refractionCorrection = refractionCorrection / 3600.0;
         }
 
-        var solarZen = zenith - refractionCorrection;
+        double solarZen = zenith - refractionCorrection;
 
         double az = Math.Floor(azimuth * 100 + 0.5) / 100.0;
         double el = Math.Floor((90.0 - solarZen) * 100 + 0.5) / 100.0;
 
         if (output)
         {
-            string dark = (solarZen > 108.0f) ? " (dark)":"";
-            Console.WriteLine("Azimuth " + az + dark);
-            Console.WriteLine("Elevation " + el + dark);
+            string dark = (solarZen > 108.0) ? " (dark)" : "";
+            outputMessages.Append("Azimuth " + az + dark + "\n");
+            outputMessages.Append("Elevation " + el + dark + "\n");
         }
-        return new SunPosition (az, el);
+        return new SkyPosition(az, el);
     }
 
     public double calcSolNoon(double jd, double longitude, double timezone, double dst)
     {
-        var tnoon = TimeConverter.calcTimeJulianCent(jd - longitude / 360.0f);
-        var eqTime = calcEquationOfTime(tnoon);
-        var solNoonOffset = 720.0f - (longitude * 4) - eqTime; // in minutes
-        var newt = TimeConverter.calcTimeJulianCent(jd + solNoonOffset / 1440.0f);
+        double tnoon = TimeConverter.calcTimeJulianCent(jd - longitude / 360.0);
+        double eqTime = calcEquationOfTime(tnoon);
+        double solNoonOffset = 720.0 - (longitude * 4) - eqTime; // in minutes
+        double newt = TimeConverter.calcTimeJulianCent(jd + solNoonOffset / 1440.0);
         eqTime = calcEquationOfTime(newt);
-        var solNoonLocal = 720 - (longitude * 4) - eqTime + (timezone * 60.0f);// in minutes
-        if (dst != 0) solNoonLocal += 60.0f;
-        while (solNoonLocal < 0.0f)
+        double solNoonLocal = 720 - (longitude * 4) - eqTime + (timezone * 60.0);// in minutes
+        if (dst > 0 || dst < 0) solNoonLocal += 60.0;
+        while (solNoonLocal < 0.0)
         {
-            solNoonLocal += 1440.0f;
+            solNoonLocal += 1440.0;
         }
-        while (solNoonLocal >= 1440.0f)
+        while (solNoonLocal >= 1440.0)
         {
-            solNoonLocal -= 1440.0f;
+            solNoonLocal -= 1440.0;
         }
         return solNoonLocal;
     }
 
     public double calcSunriseSetUTC(bool rise, double JD, double latitude, double longitude)
     {
-        var t = TimeConverter.calcTimeJulianCent(JD);
-        var eqTime = calcEquationOfTime(t);
-        var solarDec = calcSunDeclination(t);
-        var hourAngle = calcHourAngleSunrise(latitude, solarDec);
+        double t = TimeConverter.calcTimeJulianCent(JD);
+        double eqTime = calcEquationOfTime(t);
+        double solarDec = calcSunDeclination(t);
+        double hourAngle = calcHourAngleSunrise(latitude, solarDec);
         //alert("HA = " +  Rad2Deg(hourAngle));
         if (!rise) hourAngle = -hourAngle;
-        var delta = longitude +  Rad2Deg(hourAngle);
-        var timeUTC = 720 - (4.0f * delta) - eqTime;    // in minutes
+        double delta = longitude + Rad2Deg(hourAngle);
+        double timeUTC = 720 - (4.0 * delta) - eqTime;    // in minutes
         return timeUTC;
     }
 
     public void calcSunriseSet(bool rise, double JD, double latitude, double longitude, double timezone, bool dst)
     {
-        var timeUTC = calcSunriseSetUTC(rise, JD, latitude, longitude);
-        var newTimeUTC = calcSunriseSetUTC(rise, JD + timeUTC / 1440.0f, latitude, longitude);
-        var timeLocal = newTimeUTC + (timezone * 60.0f);
+        double timeUTC = calcSunriseSetUTC(rise, JD, latitude, longitude);
+        double newTimeUTC = calcSunriseSetUTC(rise, JD + timeUTC / 1440.0, latitude, longitude);
+        double timeLocal = newTimeUTC + (timezone * 60.0);
         if (rise)
         {
-            var riseT = TimeConverter.calcTimeJulianCent(JD + newTimeUTC / 1440.0f);
-            var riseAz = calcAzEl(false, riseT, timeLocal, latitude, longitude, timezone);
+            double riseT = TimeConverter.calcTimeJulianCent(JD + newTimeUTC / 1440.0);
+            SkyPosition pos = calcAzEl(false, riseT, timeLocal, latitude, longitude, timezone);
+            double riseAz = pos.Azimuth;
             //if (rise)
             //    {
             // showLineGeodesic2("sunrise", "#00aa00", riseAz, latitude, longitude);
@@ -309,29 +322,28 @@ public class SunPositionUtility
             // showLineGeodesic2("sunset", "#ff0000", riseAz, latitude, longitude);
             //    }
             //}
-            timeLocal += ((dst) ? 60.0f : 0.0f);
-            if ((timeLocal >= 0.0f) && (timeLocal < 1440.0f))
+            timeLocal += ((dst) ? 60.0 : 0.0);
+            if ((timeLocal >= 0.0) && (timeLocal < 1440.0))
             {
-                Console.WriteLine(timeLocal);
+                outputMessages.Append(timeLocal + "\n");
             }
             else
             {
-                var jday = JD;
-                var increment = ((timeLocal < 0) ? 1 : -1);
-                while ((timeLocal < 0.0f) || (timeLocal >= 1440.0f))
+                double jday = JD;
+                double increment = ((timeLocal < 0) ? 1 : -1);
+                while ((timeLocal < 0.0) || (timeLocal >= 1440.0))
                 {
-                    timeLocal += increment * 1440.0f;
+                    timeLocal += increment * 1440.0;
                     jday -= increment;
                 }
-                Console.WriteLine(TimeConverter.JulianToCalendarDate(jday).AddMinutes(timeLocal));
+                outputMessages.Append(TimeConverter.JulianToCalendarDate(jday).AddMinutes(timeLocal) + "\n");
             }
         }
         else
         { // no sunrise/set found
-            var doy = TimeConverter.CalcDoyFromJD(JD);
+            double doy = TimeConverter.CalcDoyFromJD(JD);
             double jdy = 0;
-            if (((latitude > 66.4f) && (doy > 79) && (doy < 267)) ||
-          ((latitude < -66.4f) && ((doy < 83) || (doy > 263))))
+            if (((latitude > 66.4) && (doy > 79) && (doy < 267)) || ((latitude < -66.4) && ((doy < 83) || (doy > 263))))
             {   //previous sunrise/next sunset
                 if (rise)
                 { // find previous sunrise
@@ -341,7 +353,7 @@ public class SunPositionUtility
                 { // find next sunset
                     jdy = calcJDofNextPrevRiseSet(true, rise, JD, latitude, longitude, timezone, dst);
                 }
-                Console.WriteLine(TimeConverter.JulianToCalendarDate(jdy));
+                outputMessages.Append(TimeConverter.JulianToCalendarDate(jdy) + "\n");
             }
             else
             {   //previous sunset/next sunrise
@@ -353,27 +365,27 @@ public class SunPositionUtility
                 { // find next sunset
                     jdy = calcJDofNextPrevRiseSet(false, rise, JD, latitude, longitude, timezone, dst);
                 }
-                Console.WriteLine(TimeConverter.JulianToCalendarDate(jdy));
+                outputMessages.Append(TimeConverter.JulianToCalendarDate(jdy) + "\n");
             }
         }
 
     }
     public double calcJDofNextPrevRiseSet(bool next, bool rise, double JD, double latitude, double longitude, double tz, bool dst)
     {
-        var julianday = JD;
-        var increment = ((next) ? 1.0f : -1.0f);
+        double julianday = JD;
+        double increment = ((next) ? 1.0 : -1.0);
 
-        var time = calcSunriseSetUTC(rise, julianday, latitude, longitude);
+        double time = calcSunriseSetUTC(rise, julianday, latitude, longitude);
         while (Double.IsNaN(time))
         {
             julianday += increment;
             time = calcSunriseSetUTC(rise, julianday, latitude, longitude);
         }
-        var timeLocal = time + tz * 60.0f + ((dst) ? 60.0f : 0.0f);
-        while ((timeLocal < 0.0f) || (timeLocal >= 1440.0f))
+        double timeLocal = time + tz * 60.0 + ((dst) ? 60.0 : 0.0);
+        while ((timeLocal < 0.0) || (timeLocal >= 1440.0))
         {
-            var incr = ((timeLocal < 0) ? 1 : -1);
-            timeLocal += (incr * 1440.0f);
+            double incr = ((timeLocal < 0) ? 1 : -1);
+            timeLocal += (incr * 1440.0);
             julianday -= incr;
         }
         return julianday;
@@ -381,18 +393,18 @@ public class SunPositionUtility
 
     // void calculate()
     // {
-    //     var jday = getJD(DateTime.Now);
-    //     var tl = getTimeLocal();
-    //     var tz = -5;
-    //     var dst = true;
-    //     var total = jday + tl / 1440.0f - tz / 24.0f;
-    //     var T = calcTimeJulianCent(total);
-    //     var lat = 51;
-    //     var lng = 47;
+    //     double jday = getJD(DateTime.Now);
+    //     double tl = getTimeLocal();
+    //     double tz = -5;
+    //     double dst = true;
+    //     double total = jday + tl / 1440.0f - tz / 24.0f;
+    //     double T = calcTimeJulianCent(total);
+    //     double lat = 51;
+    //     double lng = 47;
     //     calcAzEl(1, T, tl, lat, lng, tz);
     //     calcSolNoon(jday, lng, tz, dst);
-    //     var rise = calcSunriseSet(1, jday, lat, lng, tz, dst);
-    //     var set = calcSunriseSet(0, jday, lat, lng, tz, dst);
+    //     double rise = calcSunriseSet(1, jday, lat, lng, tz, dst);
+    //     double set = calcSunriseSet(0, jday, lat, lng, tz, dst);
     //     //alert("JD " + jday + "  " + rise + "  " + set + "  ")
     // }
 }
