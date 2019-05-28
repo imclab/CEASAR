@@ -11,7 +11,7 @@ public class SunPosition : MonoBehaviour
     public Material lineMaterial;
     private LineRenderer sunArcLine;
     int secondsInADay = 24 * 60 * 60;
-    int desiredLineNodeCount = 30;
+    int desiredLineNodeCount = 60;
     float xScale = 0.005f;
     float radius = 100;
     // Start is called before the first frame update
@@ -25,7 +25,7 @@ public class SunPosition : MonoBehaviour
 
         // Testing out new sun position utility - does not seem to run correctly
         // getting different results in Unity from the console application on windows
-        SunPositionUtility util = new SunPositionUtility();
+        // SunPositionUtility util = new SunPositionUtility();
 
         var jday = DateTime.Now.ToJulianDate();
         TimeSpan sinceMidnight = DateTime.Now - DateTime.Today;
@@ -34,14 +34,14 @@ public class SunPosition : MonoBehaviour
         var tz = -5;
         var total = jday + (localTime / 1440) - (tz / 24.0);
         var T = TimeConverter.calcTimeJulianCent(total);
-        util.calcAzEl(true, T, localTime, lat, lng, tz);
-        util.calcSunriseSet(true, jday, lat, lng, tz, true);
-        util.calcSunriseSet(false, jday, lat, lng, tz, true);
-        Debug.Log(util.OutputMessages.ToString());
+        //util.calcAzEl(true, T, localTime, lat, lng, tz);
+        //util.calcSunriseSet(true, jday, lat, lng, tz, true);
+        //util.calcSunriseSet(false, jday, lat, lng, tz, true);
+        //Debug.Log(util.OutputMessages.ToString());
 
 
         // move sun game object
-        sun.transform.position = new Vector3((12 - DateTime.Now.Hour) * 10, (float)solarPosition.Altitude, transform.position.z + 20);
+        sun.transform.position = solarPosToWorld(solarPosition);
         Debug.LogFormat("Result ==> Time: {0}, Altitude: {1}, Azimuth :{2}", secs, solarPosition.Altitude, solarPosition.Azimuth);
 
         renderSunArc();
@@ -58,8 +58,9 @@ public class SunPosition : MonoBehaviour
             DateTime t = midnight.AddSeconds(i);
             var solarPosition = CalculateSunPosition(t, dataController.currentCity.Lat, dataController.currentCity.Lng);
             points.Add(solarPosToWorld(solarPosition));
-            // util.calcAzEl(true, DateTime.Now.ToJulianDate(), i, dataController.currentCity.Lat, dataController.currentCity.Lng, -5);
-            // Debug.LogFormat("Result ==> Time: {0}, Altitude: {1}, Azimuth :{2}", t.ToShortTimeString(), solarPosition.Altitude, solarPosition.Azimuth);
+            //SkyPosition skyPos = util.calcAzEl(true, DateTime.Now.ToJulianDate(), i, dataController.currentCity.Lat, dataController.currentCity.Lng, -5);
+            //Debug.LogFormat("Result (simple) ==> Time: {0}, Altitude: {1}, Azimuth :{2}", t.ToShortTimeString(), solarPosition.Altitude, solarPosition.Azimuth);
+            //Debug.LogFormat("Result (new) ==> Time: {0}, Altitude: {1}, Azimuth :{2}", t.ToShortTimeString(), skyPos.Elevation, skyPos.Azimuth);
         }
         sunArcLine.positionCount = points.Count;
         sunArcLine.SetPositions(points.ToArray());
@@ -67,7 +68,7 @@ public class SunPosition : MonoBehaviour
         sunArcLine.startWidth = 0.2f;
         sunArcLine.endWidth = 0.2f;
     }
-    // Update is called once per frame
+
     void Update()
     {
         if (currentCity != dataController.currentCity)
@@ -81,9 +82,12 @@ public class SunPosition : MonoBehaviour
     }
     Vector3 solarPosToWorld(SolarPosition pos)
     {
-        Vector3 p = transform.position - (Vector3.forward * radius * 0.5f);
-        p.x = calculateX((float)pos.Azimuth); //((secondsInADay / 2) - i) * xScale;
-        p.y = calculateY((float)pos.Altitude);//(float)solarPosition.Altitude;
+        float yPos = calculateY((float)pos.Altitude);
+
+        Vector3 p = transform.position;
+        p.x = calculateX((float)pos.Azimuth);
+        p.y = yPos;
+        p.z = Mathf.Sqrt((radius * radius) - (yPos * yPos));
         return p;
     }
     float calculateX(float azimuth)
