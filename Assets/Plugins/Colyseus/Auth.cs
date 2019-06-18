@@ -101,20 +101,32 @@ namespace Colyseus
 
 		public async Task<Auth> Login(/* anonymous */)
 		{
-			return await Login(HttpUtility.ParseQueryString(string.Empty));
-		}
+#if UNITY_WSA
+            return await Login(UtilsHttpUtility.ParseQueryString(string.Empty));
+#else
+            return await Login(HttpUtility.ParseQueryString(string.Empty));
+#endif
+        }
 
 		public async Task<Auth> Login(string facebookAccessToken)
 		{
-			var query = HttpUtility.ParseQueryString(string.Empty);
-			query["accessToken"] = facebookAccessToken;
+#if UNITY_WSA
+            var query = UtilsHttpUtility.ParseQueryString(string.Empty);
+#else
+            var query = HttpUtility.ParseQueryString(string.Empty);
+#endif
+            query["accessToken"] = facebookAccessToken;
 			return await Login(query);
 		}
 
 		public async Task<Auth> Login(string email, string password)
-		{
-			var query = HttpUtility.ParseQueryString(string.Empty);
-			query["email"] = email;
+        {
+#if UNITY_WSA
+            var query = UtilsHttpUtility.ParseQueryString(string.Empty);
+#else
+            var query = HttpUtility.ParseQueryString(string.Empty);
+#endif
+            query["email"] = email;
 			query["password"] = password;
 			return await Login(query);
 		}
@@ -188,37 +200,57 @@ namespace Colyseus
 		}
 
 		public async Task<StatusData> SendFriendRequest(string friendId)
-		{
-			var query = HttpUtility.ParseQueryString(string.Empty);
-			query["userId"] = friendId;
+        {
+#if UNITY_WSA
+            var query = UtilsHttpUtility.ParseQueryString(string.Empty);
+#else
+            var query = HttpUtility.ParseQueryString(string.Empty);
+#endif
+            query["userId"] = friendId;
 			return await Request<StatusData>("POST", "/friends/requests", query);
 		}
 
 		public async Task<StatusData> AcceptFriendRequest(string friendId)
-		{
-			var query = HttpUtility.ParseQueryString(string.Empty);
-			query["userId"] = friendId;
+        {
+#if UNITY_WSA
+            var query = UtilsHttpUtility.ParseQueryString(string.Empty);
+#else
+            var query = HttpUtility.ParseQueryString(string.Empty);
+#endif
+            query["userId"] = friendId;
 			return await Request<StatusData>("PUT", "/friends/requests", query);
 		}
 
 		public async Task<StatusData> DeclineFriendRequest(string friendId)
-		{
-			var query = HttpUtility.ParseQueryString(string.Empty);
-			query["userId"] = friendId;
+        {
+#if UNITY_WSA
+            var query = UtilsHttpUtility.ParseQueryString(string.Empty);
+#else
+            var query = HttpUtility.ParseQueryString(string.Empty);
+#endif
+            query["userId"] = friendId;
 			return await Request<StatusData>("DELETE", "/friends/requests", query);
 		}
 
 		public async Task<StatusData> BlockUser(string friendId)
-		{
-			var query = HttpUtility.ParseQueryString(string.Empty);
-			query["userId"] = friendId;
+        {
+#if UNITY_WSA
+            var query = UtilsHttpUtility.ParseQueryString(string.Empty);
+#else
+            var query = HttpUtility.ParseQueryString(string.Empty);
+#endif
+            query["userId"] = friendId;
 			return await Request<StatusData>("POST", "/friends/block", query);
 		}
 
 		public async Task<StatusData> UnblockUser(string friendId)
-		{
-			var query = HttpUtility.ParseQueryString(string.Empty);
-			query["userId"] = friendId;
+        {
+#if UNITY_WSA
+            var query = UtilsHttpUtility.ParseQueryString(string.Empty);
+#else
+            var query = HttpUtility.ParseQueryString(string.Empty);
+#endif
+            query["userId"] = friendId;
 			return await Request<StatusData>("PUT", "/friends/block", query);
 		}
 
@@ -231,12 +263,16 @@ namespace Colyseus
 		protected async Task<T> Request<T>(string method, string segments, NameValueCollection query = null, UploadHandlerRaw data = null)
 		{
 			if (query == null)
-			{
-				query = HttpUtility.ParseQueryString(string.Empty);
-			}
+            {
+#if UNITY_WSA
+                query = UtilsHttpUtility.ParseQueryString(string.Empty);
+#else
+                query = HttpUtility.ParseQueryString(string.Empty);
+#endif
+            }
 
-			// Append auth token, if it exists
-			if (HasToken) query["token"] = Token;
+            // Append auth token, if it exists
+            if (HasToken) query["token"] = Token;
 
 			var uriBuilder = new UriBuilder(Endpoint);
 			uriBuilder.Path = segments;
@@ -319,5 +355,19 @@ namespace Colyseus
 #endif
 		}
 	}
-
+    public static class UtilsHttpUtility
+    {
+        public static NameValueCollection ParseQueryString(string q)
+        {
+            string source = q.StartsWith("?") ? q.Substring(1) : q;
+            string[] kvps = source.Split('&');
+            NameValueCollection nvc = new NameValueCollection();
+            foreach (string kvp in kvps)
+            {
+                string[] parts = kvp.Split('=');
+                nvc.Add(parts[0], parts[1]);
+            }
+            return nvc;
+        }
+    }
 }
