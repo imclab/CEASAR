@@ -144,7 +144,7 @@ public class WebSocket
 			await m_Socket.ConnectAsync(mUrl);
 			m_IsConnected = true;
 			if (OnOpen != null) {
-				OnOpen.Invoke(sender, e);
+				OnOpen.Invoke(this);
 			}
 			Debug.Log("Connected");
 		}
@@ -161,7 +161,7 @@ public class WebSocket
     private void M_Socket_Closed(IWebSocket sender, WebSocketClosedEventArgs args)
     {
 		if (OnClose != null) {
-			OnClose.Invoke(sender, e);
+			OnClose.Invoke(sender, (EventArgs)args);
 		}
         m_Error = args.Reason;
     }
