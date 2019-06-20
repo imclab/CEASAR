@@ -526,10 +526,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   setCursorInvisibleWhenFocusLocked: 1
-  maxGazeCollisionDistance: 10
+  maxGazeCollisionDistance: 100
   raycastLayerMasks:
   - serializedVersion: 2
-    m_Bits: 4294967291
+    m_Bits: 4294967295
   stabilizer:
     storedStabilitySamples: 60
   gazeTransform: {fileID: 0}
@@ -2634,7 +2634,7 @@ Canvas:
   serializedVersion: 3
   m_RenderMode: 2
   m_Camera: {fileID: 0}
-  m_PlaneDistance: 50
+  m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
@@ -2652,8 +2652,8 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6843752673872901365}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 50}
-  m_LocalScale: {x: 0.062411565, y: 0.062411565, z: 0.062411565}
+  m_LocalPosition: {x: 0, y: 0, z: 9}
+  m_LocalScale: {x: 0.0085, y: 0.0085, z: 0.0085}
   m_Children:
   - {fileID: 6843752673653470979}
   - {fileID: 6843752674459789787}
@@ -2662,7 +2662,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 31.6, y: 0.1}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 500, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &6843752673872901362
@@ -2720,7 +2720,6 @@ GameObject:
   - component: {fileID: 6843752673872901359}
   - component: {fileID: 8720111886995700378}
   - component: {fileID: 6843752673872901367}
-  - component: {fileID: 6843752673872901366}
   m_Layer: 5
   m_Name: MainARUI
   m_TagString: Untagged
@@ -2728,29 +2727,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &6843752673872901366
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6843752673872901365}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf98dd1206224111a38765365e98e207, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  setCursorInvisibleWhenFocusLocked: 1
-  maxGazeCollisionDistance: 100
-  raycastLayerMasks:
-  - serializedVersion: 2
-    m_Bits: 4294967295
-  stabilizer:
-    storedStabilitySamples: 60
-  gazeTransform: {fileID: 0}
-  minHeadVelocityThreshold: 0.5
-  maxHeadVelocityThreshold: 2
-  useEyeTracking: 0
 --- !u!114 &6843752673872901367
 MonoBehaviour:
   m_ObjectHideFlags: 0
