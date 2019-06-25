@@ -31,6 +31,21 @@ public class StarComponent : MonoBehaviour, IPointerDownHandler, IPointerExitHan
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        SelectStar();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        HighlightStar(true);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        HighlightStar(false);
+    }
+
+    public void SelectStar()
+    {
         MainUIController mainUIController = FindObjectOfType<MainUIController>();
         if (!constellationsController) constellationsController = FindObjectOfType<ConstellationsController>();
         if (mainUIController && mainUIController.starInfoPanel)
@@ -40,16 +55,16 @@ public class StarComponent : MonoBehaviour, IPointerDownHandler, IPointerExitHan
             mainUIController.ChangeConstellationHighlight(starData.ConstellationFullName);
         }
     }
-
-    public void OnPointerEnter(PointerEventData eventData)
+    public void HighlightStar(bool highlight)
     {
-        currentScale = transform.localScale;
-        transform.localScale = currentScale * scaleFactor;
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        transform.localScale = currentScale;
+        if (highlight)
+        {
+            currentScale = transform.localScale;
+            transform.localScale = currentScale * scaleFactor;
+        }
+        else {
+            transform.localScale = currentScale;
+        }
     }
     public void SetStarColor(Color constellationColor, Color starColor)
     {
